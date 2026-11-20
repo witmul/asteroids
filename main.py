@@ -49,7 +49,7 @@ def main():
                 sys.exit()
             for shot in shots:
                 if shot.collide_with(asteroid):
-                    print("asteroid_shot")
+                    log_event("asteroid_shot")
                     shot.kill()
                     asteroid.kill()
 
