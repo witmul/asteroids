@@ -7,6 +7,7 @@ from player import Player
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
 from shot import Shot
+from bonus import Bonus
 
 def main():
     print(f"Starting Asteroids with pygame version: {pygame.version.ver}")
@@ -26,13 +27,16 @@ def main():
     asteroids = pygame.sprite.Group()
     asteroidfield = pygame.sprite.Group()
     shots = pygame.sprite.Group()
-
+    bonuses = pygame.sprite.Group()
+    
     Player.containers = (updatable, drawable)
     Asteroid.containers = (updatable, drawable, asteroids)
     AsteroidField.containers = (updatable)
     Shot.containers = (updatable, drawable, shots)
+    Bonus.containers = (drawable, bonuses)
     
     player = Player(x = SCREEN_WIDTH / 2, y = SCREEN_HEIGHT / 2)
+    bonus = Bonus(200, 234, 20)
     asteroidfield = AsteroidField()
 
     while True:
@@ -59,6 +63,10 @@ def main():
 
         for item in drawable:
             item.draw(screen)
+        
+        for bonus in bonuses:
+            if bonus.collide_with(player):
+                bonus.activate(player)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
