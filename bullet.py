@@ -4,7 +4,7 @@ from constants import LINE_WIDTH
 
 
 class Bullet(CircleShape):
-    def __init__(self, x: float, y: float, velocity: pygame.Vector2):
+    def __init__(self, x: float, y: float, velocity: pygame.Vector2) -> None:
         super().__init__(x, y)
         self.velocity = velocity
 

@@ -4,7 +4,7 @@ from constants import PLAYER_RADIUS, PLAYER_TURN_SPEED, PLAYER_SPEED, LINE_WIDTH
 from shot import Shot
 
 class Player(CircleShape):
-    def __init__(self, x: float, y: float):
+    def __init__(self, x: float, y: float) -> None:
         super().__init__(x, y, PLAYER_RADIUS)
         self.rotation = 0
         self.shoot_timer = 0
@@ -17,7 +17,7 @@ class Player(CircleShape):
         c = self.position - forward * self.radius + right
         return [a, b, c]
     
-    def draw(self, screen: pygame.Surface):
+    def draw(self, screen: pygame.Surface) -> None:
         pygame.draw.polygon(screen, "white", self.triangle(), LINE_WIDTH)
 
     def update(self, dt: float) -> None:
@@ -36,7 +36,7 @@ class Player(CircleShape):
         if keys[pygame.K_SPACE]:
             self.shoot()
 
-    def rotate(self, dt: float):
+    def rotate(self, dt: float) -> None:
         self.rotation += PLAYER_TURN_SPEED * dt
     
     def move(self, dt: float) -> None:
