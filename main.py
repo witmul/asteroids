@@ -1,15 +1,21 @@
 import pygame
-import sys
 
-from logger import log_state, log_event
 from constants import SCREEN_HEIGHT, SCREEN_WIDTH
-from player import Player
-from asteroid import Asteroid
-from asteroidfield import AsteroidField
-from shot import Shot
-from bonus import Bonus
+from game_state import GameState
+from logger import log_state
 
-def main():
+
+def render_score(font: pygame.font.Font, score_value: int, colour: tuple[int, int, int]) -> pygame.Surface:
+    return font.render(f"Score: {score_value}", False, colour)
+
+def log_snapshot(screen: pygame.Surface, state: GameState) -> None:
+    # log_state() scrapes its caller's local variables, so the groups have to be locals here.
+    updatable, drawable, asteroids, shots, bonuses = (
+        state.updatable, state.drawable, state.asteroids, state.shots, state.bonuses
+    )
+    log_state()
+
+def main() -> None:
     print(f"Starting Asteroids with pygame version: {pygame.version.ver}")
     print(f"Screen width: {SCREEN_WIDTH}")
     print(f"Screen height: {SCREEN_HEIGHT}")
@@ -18,71 +24,35 @@ def main():
 
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     clock = pygame.time.Clock()
-    score = pygame.font.SysFont(None, 36)
-    dt = 0.0
-    score_value = 0
-    game_state = True
-
-    updatable = pygame.sprite.Group()
-    drawable = pygame.sprite.Group()
-    asteroids = pygame.sprite.Group()
-    asteroidfield = pygame.sprite.Group()
-    shots = pygame.sprite.Group()
-    bonuses = pygame.sprite.Group()
-    
-    Player.containers = (updatable, drawable)
-    Asteroid.containers = (updatable, drawable, asteroids)
-    AsteroidField.containers = (updatable)
-    Shot.containers = (updatable, drawable, shots)
-    Bonus.containers = (drawable, bonuses)
-    
-    player = Player(x = SCREEN_WIDTH / 2, y = SCREEN_HEIGHT / 2)
-    bonus = Bonus(200, 234, 20)
-    asteroidfield = AsteroidField()
+    font = pygame.font.SysFont(None, 36)
+    state = GameState()
 
     while True:
+        dt = clock.tick(60) / 1000
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_r and not state.active:
+                # restart the game
+                state = GameState()
 
-        if game_state:
-            score_render = score.render(f"Score: {score_value}", False, "white")
-            dt = clock.tick(60) / 1000
-            log_state()
-            
-            screen.fill((0, 0, 0))
-            screen.blit(score_render, (SCREEN_WIDTH / 2 - score_render.get_width() / 2, 10))
+        state.update(dt)
 
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    return
+        screen.fill((0, 0, 0))
 
-            updatable.update(dt)
-            for asteroid in asteroids:
-                if asteroid.collide_with(player):
-                    log_event("player_hit")
-                    game_state = False
+        score_text_render = render_score(font, state.score, (255, 255, 255))
+        restart_text_render = font.render("To restart press - r", False, (255, 255, 255))
 
-                for shot in shots:
-                    if shot.collide_with(asteroid):
-                        log_event("asteroid_shot")
-                        score_value += 1
-                        shot.kill()
-                        asteroid.split()
+        screen.blit(score_text_render, (SCREEN_WIDTH / 2 - score_text_render.get_width() / 2, 10))
 
-            for item in drawable:
-                item.draw(screen)
-            
-            for bonus in bonuses:
-                if bonus.collide_with(player):
-                    bonus.activate(player)
-
-        if not game_state:
-            screen.fill("yellow")
+        if state.active:
+            log_snapshot(screen, state)
+            state.draw(screen)
+        else:
+            screen.blit(restart_text_render, (SCREEN_WIDTH / 2 - restart_text_render.get_width() / 2, SCREEN_HEIGHT / 2))
 
         pygame.display.flip()
-
 
 
 if __name__ == "__main__":
