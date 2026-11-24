@@ -21,6 +21,7 @@ def main():
     score = pygame.font.SysFont(None, 36)
     dt = 0.0
     score_value = 0
+    game_state = True
 
     updatable = pygame.sprite.Group()
     drawable = pygame.sprite.Group()
@@ -41,39 +42,46 @@ def main():
 
     while True:
 
-        score_render = score.render(f"Score: {score_value}", False, "white")
-        dt = clock.tick(60) / 1000
-        log_state()
-        
-        screen.fill((0, 0, 0))
-        screen.blit(score_render, (SCREEN_WIDTH / 2 - score_render.get_width() / 2, 10))
-
-        updatable.update(dt)
-        for asteroid in asteroids:
-            if asteroid.collide_with(player):
-                log_event("player_hit")
-                print("Game over!")
-                sys.exit()
-            for shot in shots:
-                if shot.collide_with(asteroid):
-                    log_event("asteroid_shot")
-                    score_value += 1
-                    shot.kill()
-                    asteroid.split()
-
-        for item in drawable:
-            item.draw(screen)
-        
-        for bonus in bonuses:
-            if bonus.collide_with(player):
-                bonus.activate(player)
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
 
-        pygame.display.flip()
+        if game_state:
+            score_render = score.render(f"Score: {score_value}", False, "white")
+            dt = clock.tick(60) / 1000
+            log_state()
+            
+            screen.fill((0, 0, 0))
+            screen.blit(score_render, (SCREEN_WIDTH / 2 - score_render.get_width() / 2, 10))
 
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return
+
+            updatable.update(dt)
+            for asteroid in asteroids:
+                if asteroid.collide_with(player):
+                    log_event("player_hit")
+                    game_state = False
+
+                for shot in shots:
+                    if shot.collide_with(asteroid):
+                        log_event("asteroid_shot")
+                        score_value += 1
+                        shot.kill()
+                        asteroid.split()
+
+            for item in drawable:
+                item.draw(screen)
+            
+            for bonus in bonuses:
+                if bonus.collide_with(player):
+                    bonus.activate(player)
+
+        if not game_state:
+            screen.fill("yellow")
+
+        pygame.display.flip()
 
 
 
